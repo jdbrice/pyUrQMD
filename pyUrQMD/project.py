@@ -30,7 +30,7 @@ def condorProject( p_name, ifsuffix = ".urqmd" ) :
 				findex = int(f[ len(f) - (len( ifsuffix ) + 1) ])
 				exportInputFile( findex, dirname )
 				exportOutputFile( findex, dirname )
-				outFile = "output = " + os.path.join( dirname, p_root + "/log." + str(findex) + ".log" )
+				outFile = "output = " + os.path.join( dirname, "log." + str(findex) + ".log" )
 				subprocess.check_call(['condor_submit', '-a', outFile, 'condor.submit'], env=os.environ)
 
 
