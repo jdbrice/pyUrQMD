@@ -27,7 +27,7 @@ def condorProject( p_name, ifsuffix = ".urqmd" ) :
 	for dirname, subdirList, fileList in os.walk( p_root ) :
 		for f in fileList :
 			if f.startswith( "input" ) and f.endswith( ifsuffix ):
-				findex = int(f[ len(f) - (len( ifsuffix ) + 1) ])
+				findex = int(f[ len("input") : -len(ifsuffix) ])
 				exportInputFile( findex, dirname )
 				exportOutputFile( findex, dirname )
 				outFile = "output = " + os.path.join( dirname, "log." + str(findex) + ".log" )
