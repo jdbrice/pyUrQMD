@@ -12,7 +12,7 @@ if len( sys.argv ) >= 4 :
 	totalEvents = sys.argv[ 3 ]
 else :
 	exit()
-if len( sys.argv == 5) :
+if len( sys.argv ) == 5 :
 	eventsPerJob = sys.argv[ 4 ]
 
 
