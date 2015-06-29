@@ -6,7 +6,7 @@ print "Usage:\n", "urqmd project_name comEnergy totalEvents eventsPerJob"
 
 eventsPerJob = 100
 
-if len( sys.argv ) == 4 :
+if len( sys.argv ) >= 4 :
 	name = sys.argv[ 1 ]
 	energy = sys.argv[ 2 ]
 	totalEvents = sys.argv[ 3 ]
