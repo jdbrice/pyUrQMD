@@ -6,7 +6,7 @@ import sys
 def writeInputfile( nEvents, energy, fname="inputfile" ):
 	# Uses /dev/urandom - random enough for cryptographic uses
 	r = random.SystemRandom()
-	rndSeed = r.randint(0, 10000)
+	rndSeed = r.randint(0, 1000000)
 
 	## A simple template for UrQMD input file
 	template = """#Generated
