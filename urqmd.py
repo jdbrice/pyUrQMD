@@ -17,5 +17,7 @@ if len( sys.argv == 5) :
 
 
 
-urqmd.createProject( "auau14p5", 14.5, 10, 1)
-urqmd.condorProject("auau14p5")
+urqmd.createProject( name, energy, totalEvents, eventsPerJob )
+
+
+urqmd.condorProject( name )
