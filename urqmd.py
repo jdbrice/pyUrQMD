@@ -8,7 +8,7 @@ eventsPerJob = 100
 
 if len( sys.argv ) >= 4 :
 	name = sys.argv[ 1 ]
-	energy = int(sys.argv[ 2 ])
+	energy = float(sys.argv[ 2 ])
 	totalEvents = int(sys.argv[ 3 ])
 else :
 	exit()
