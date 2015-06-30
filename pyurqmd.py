@@ -2,7 +2,7 @@
 import pyUrQMD.project as urqmd
 import sys
 
-print "Usage:\n", "urqmd project_name comEnergy totalEvents eventsPerJob"
+print "Usage:\n", "pyurqmd project_name comEnergy totalEvents eventsPerJob"
 
 eventsPerJob = 100
 
@@ -16,8 +16,4 @@ if len( sys.argv ) == 5 :
 	eventsPerJob = int(sys.argv[ 4 ])
 
 
-
 urqmd.createProject( name, energy, totalEvents, eventsPerJob )
-
-
-urqmd.condorProject( name )

@@ -34,3 +34,15 @@ def condorProject( p_name, ifsuffix = ".urqmd" ) :
 				subprocess.check_call(['condor_submit', '-a', outFile, 'condor.submit'], env=os.environ)
 
 
+def qsubProject( p_name, ifsuffix = ".urqmd" ) :
+	p_root = "./" + str(p_name)
+	for dirname, subdirList, fileList in os.walk( p_root ) :
+		for f in fileList :
+			if f.startswith( "input" ) and f.endswith( ifsuffix ):
+				findex = int(f[ len("input") : -len(ifsuffix) ])
+				exportInputFile( findex, dirname )
+				exportOutputFile( findex, dirname )
+				outFile = "output = " + os.path.join( dirname, "log." + str(findex) + ".log" )
+				subprocess.check_call(['condor_qsub', '-o', outFile, 'urqmd.sh'], env=os.environ)
+
+

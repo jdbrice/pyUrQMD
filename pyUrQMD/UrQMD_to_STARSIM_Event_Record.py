@@ -50,6 +50,8 @@ tVertex = """VERTEX: {0} {1} {2} {3} {4} {5} {6} {7}"""
 tTrack = """TRACK: {0} {1} {2} {3} {4} {5} {6} {7}"""
 
 
+import sys
+import numpy as np
 
 # Read UrQMD Event Header
 # Generate Random Vertex?
@@ -58,23 +60,73 @@ tTrack = """TRACK: {0} {1} {2} {3} {4} {5} {6} {7}"""
 
 class UrQMDEvent :
 	index = 1
-	nVertices = 0
+	nVertices = 1
 	nTracks = 0
 
-	def __init__(self):
-		index = 1
+	def __init__(self, nIndex):
+		index = nIndex
 	def read_2_03( self, fIn, cLine ) :
 		for i, line in enumerate( fIn ) :
 			if i >= cLine and i < cLine + 16:
 				print line 
+	def read_3_4( self, fIn, cLine ) :
+		fIn.seek(0, 0)
+		for i, line in enumerate( fIn, 0 ) :
+			if i >= cLine and i < cLine + 19:
+				if i == cLine + 17 :
+					data = line.split()
+					print "nTracks =", data[ 0 ]
+					self.nTracks = data[ 0 ]
+				#print line 
+		return currentLine + 19
 
 
-fInput = open( "151.f13" )
 
-cEvent = UrQMDEvent()
+class UrQMDTrack : 
+	def read_3_4( self, fIn, cLine ) : 
+		fIn.seek(0, 0)
+		for i, line in enumerate( fInput, 0 ) :
+			print line
+		
+
+# Samples a z Vertex
+# gaussian in x and y
+# flat in z
+def rndVertex( x, sx, y, sy, zMin, zMax ) :
+	vX = sx * np.random.randn() + x
+	vY = sy * np.random.randn() + y
+	vZ = np.random.random_sample( ) * 60 - 30
+	return ( vX, vY, vZ )
+
+
+fInput = open( sys.argv[1] )
+
+
+iEvent = 1
+cEvent = UrQMDEvent( iEvent )
 currentLine = 0
 
-cEvent.read_2_03( fInput, currentLine );
+currentLine = cEvent.read_3_4( fInput, currentLine );
+print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
+
+vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
+vT = 0
+print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
+
+for iTrack in range( 0, int(cEvent.nTracks) ) :
+	cTrack = UrQMDTrack()
+	cTrack.read_3_4( fInput, int(currentLine + iTrack))
+
+currentLine = cEvent.read_3_4( fInput, currentLine + int(cEvent.nTracks) );
+print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
+
+vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
+vT = 0
+print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
+
+
+
+
 
 
 
