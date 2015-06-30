@@ -79,8 +79,7 @@ class UrQMDEvent :
 					self.nTracks = data[ 0 ]
 			if i == 18 :
 				break
-				#print line 
-		return currentLine + 19
+		return 19;
 
 def file_len(fname):
     with open(fname) as f:
@@ -98,9 +97,13 @@ class UrQMDTrack :
 
 	def read_3_4( self, fIn, cLine, nTracks ) : 
 		#fIn.seek(0, 0)
-		for i, line in enumerate( fInput, 0 ) :
+		for i, line in enumerate( fIn, 0 ) :
 			data = line.split()
 			self.GPID = data[ 9 ]
+			charge = self.GPID = data[ 11 ]
+
+			# TODO: PDGID lookup from GPID and charge
+			self.PDGPID = -1
 			self.px = float(data[ 5 ])
 			self.py = float(data[ 6 ])
 			self.pz = float(data[ 7 ])
@@ -117,37 +120,37 @@ def rndVertex( x, sx, y, sy, zMin, zMax ) :
 	return ( vX, vY, vZ )
 
 
-fLength = file_len( sys.argv[1] )
+def convert( finput ) :
 
+	fLength = file_len( finput )
+	fInput = open( finput )
 
-fInput = open( sys.argv[1] )
+	eof = False
+	iEvent = 1
+	currentLine = 0
+	while eof == False :
+		
+		#Event 
+		cEvent = UrQMDEvent( iEvent )
+		currentLine += cEvent.read_3_4( fInput, currentLine );
+		currentLine += int(cEvent.nTracks)
+		print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
 
-eof = False
-iEvent = 1
-currentLine = 0
-while eof == False :
-	
-	#Event 
-	cEvent = UrQMDEvent( iEvent )
-	currentLine = cEvent.read_3_4( fInput, currentLine );
-	currentLine += int(cEvent.nTracks)
-	print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
+		# Vertex
+		vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
+		vT = 0
+		print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
 
-	# Vertex
-	vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
-	vT = 0
-	print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
+		# Tracks
+		for iTrack in range( 0, int(cEvent.nTracks) ) :
+			cTrack = UrQMDTrack()
+			cTrack.read_3_4( fInput, int(currentLine + iTrack), cEvent.nTracks)
+			print tTrack.format( cTrack.PDGPID, cTrack.px, cTrack.py, cTrack.pz, cEvent.index, iTrack, cTrack.stopv, cTrack.GPID )
 
-	# Tracks
-	for iTrack in range( 0, int(cEvent.nTracks) ) :
-		cTrack = UrQMDTrack()
-		cTrack.read_3_4( fInput, int(currentLine + iTrack), cEvent.nTracks)
-		print tTrack.format( cTrack.PDGPID, cTrack.px, cTrack.py, cTrack.pz, cEvent.index, iTrack, cTrack.stopv, cTrack.GPID )
+		iEvent = iEvent + 1;
+		if currentLine >= fLength :
+			eof = True
+			break
 
-	iEvent = iEvent + 1;
-	if currentLine >= fLength :
-		eof = True
-		break
-
-fInput.close()
+	fInput.close()
 
