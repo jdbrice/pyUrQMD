@@ -47,7 +47,7 @@ tVertex = """VERTEX: {0} {1} {2} {3} {4} {5} {6} {7}"""
 # {5} = ntr - Track Index ( starting at 0 of course )
 # {6} = stopv - vertex where track ends ( 0 for a track that does not end in this event)
 # {7} = PDGPID - Particle Data Group Particle ID ( see http://pdg.lbl.gov/2002/montecarlorpp.pdf )
-tTrack = """TRACK: {0} {1} {2} {3} {4} {5} {6} {7}"""
+tTrack = """TRACK: {0} {1:f} {2:f} {3:f} {4} {5} {6} {7}"""
 
 
 import sys
@@ -64,29 +64,47 @@ class UrQMDEvent :
 	nTracks = 0
 
 	def __init__(self, nIndex):
-		index = nIndex
+		self.index = nIndex
 	def read_2_03( self, fIn, cLine ) :
 		for i, line in enumerate( fIn ) :
 			if i >= cLine and i < cLine + 16:
 				print line 
+
 	def read_3_4( self, fIn, cLine ) :
-		fIn.seek(0, 0)
+		#fIn.seek(0, 0)
 		for i, line in enumerate( fIn, 0 ) :
-			if i >= cLine and i < cLine + 19:
-				if i == cLine + 17 :
+			if i < 19:
+				if i == 17 :
 					data = line.split()
-					print "nTracks =", data[ 0 ]
 					self.nTracks = data[ 0 ]
+			if i == 18 :
+				break
 				#print line 
 		return currentLine + 19
 
-
+def file_len(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
 
 class UrQMDTrack : 
-	def read_3_4( self, fIn, cLine ) : 
-		fIn.seek(0, 0)
+	GPID = -1
+	px = -1.0
+	py = -1.0
+	pz = -1.0
+	stopv = 0
+	PDGPID = 0
+
+	def read_3_4( self, fIn, cLine, nTracks ) : 
+		#fIn.seek(0, 0)
 		for i, line in enumerate( fInput, 0 ) :
-			print line
+			data = line.split()
+			self.GPID = data[ 9 ]
+			self.px = float(data[ 5 ])
+			self.py = float(data[ 6 ])
+			self.pz = float(data[ 7 ])
+			break;
 		
 
 # Samples a z Vertex
@@ -99,37 +117,37 @@ def rndVertex( x, sx, y, sy, zMin, zMax ) :
 	return ( vX, vY, vZ )
 
 
+fLength = file_len( sys.argv[1] )
+
+
 fInput = open( sys.argv[1] )
 
-
+eof = False
 iEvent = 1
-cEvent = UrQMDEvent( iEvent )
 currentLine = 0
+while eof == False :
+	
+	#Event 
+	cEvent = UrQMDEvent( iEvent )
+	currentLine = cEvent.read_3_4( fInput, currentLine );
+	currentLine += int(cEvent.nTracks)
+	print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
 
-currentLine = cEvent.read_3_4( fInput, currentLine );
-print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
+	# Vertex
+	vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
+	vT = 0
+	print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
 
-vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
-vT = 0
-print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
+	# Tracks
+	for iTrack in range( 0, int(cEvent.nTracks) ) :
+		cTrack = UrQMDTrack()
+		cTrack.read_3_4( fInput, int(currentLine + iTrack), cEvent.nTracks)
+		print tTrack.format( cTrack.PDGPID, cTrack.px, cTrack.py, cTrack.pz, cEvent.index, iTrack, cTrack.stopv, cTrack.GPID )
 
-for iTrack in range( 0, int(cEvent.nTracks) ) :
-	cTrack = UrQMDTrack()
-	cTrack.read_3_4( fInput, int(currentLine + iTrack))
-
-currentLine = cEvent.read_3_4( fInput, currentLine + int(cEvent.nTracks) );
-print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
-
-vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
-vT = 0
-print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
-
-
-
-
-
-
-
+	iEvent = iEvent + 1;
+	if currentLine >= fLength :
+		eof = True
+		break
 
 fInput.close()
 
