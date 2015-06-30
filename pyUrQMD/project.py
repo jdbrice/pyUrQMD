@@ -43,6 +43,6 @@ def qsubProject( p_name, ifsuffix = ".urqmd" ) :
 				exportInputFile( findex, dirname )
 				exportOutputFile( findex, dirname )
 				outFile = "output = " + os.path.join( dirname, "log." + str(findex) + ".log" )
-				subprocess.check_call(['condor_qsub', '-o', outFile, 'urqmd.sh'], env=os.environ)
+				subprocess.check_call(['qsub', '-o', outFile, 'urqmd.sh'], env=os.environ)
 
 
