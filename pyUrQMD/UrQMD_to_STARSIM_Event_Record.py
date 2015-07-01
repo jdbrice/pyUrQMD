@@ -21,40 +21,41 @@
 # etc.
 
 
-# EVENT:  n  ntracks  nvertices
-# {0} = n - Event index starting at 1
-# {1} = ntracks - number of tracks in event
-# {2} = nvertices - number of vertices in event
+# EVENT: event_id n_tracks n_vertices
+# {0} = event_id - Event index starting at 1
+# {1} = n_tracks - number of tracks in event
+# {2} = n_vertices - number of vertices in event
 tEvent = """EVENT: {0} {1} {2}"""
 
-# VERTEX:  x  y  z  t  nv  nproc  nparent  ndaughters ,
+# VERTEX: x y z t vertex_id process parent_track n_daughters ,
 # {0} = x - vX
 # {1} = y - vY
 # {2} = z - vZ
 # {3} = t - Time of collision
-# {4} = nv - Vertex index starting at 1
-# {5} = nproc - Physical process Index - always set to 0
-# {6} = nparent - Parent Track Index ( 0 for primary vertex )
-# {7} = ndaughters - Number of daughter tracks from this vertex
+# {4} = vertex_id - Vertex index starting at 1
+# {5} = process - Physical process Index - always set to 0
+# {6} = parent_track - Parent Track Index ( 0 for primary vertex )
+# {7} = n_daughters - Number of daughter tracks from this vertex
 tVertex = """VERTEX: {0} {1} {2} {3} {4} {5} {6} {7}"""
 
-# TRACK:  GPID  px  py  py nev  ntr  stopv PDGPID
-# {0} = GPID - GEANT Particle ID ( see http://www.star.bnl.gov/public/comp/simu/gstar/Manual/particle_id.html )
+# TRACK: ge_pid px py pz track_id start_vertex stop_vertex eg_pid
+# {0} = ge_pid - GEANT Particle ID ( see http://www.star.bnl.gov/public/comp/simu/gstar/Manual/particle_id.html )
 # {1} = px - x momentum
 # {2} = py - y momentum
 # {3} = pz - z momentum
-# {4} = nev - Event index
-# {5} = ntr - Track Index ( starting at 0 of course )
-# {6} = stopv - vertex where track ends ( 0 for a track that does not end in this event)
-# {7} = PDGPID - Particle Data Group Particle ID ( see http://pdg.lbl.gov/2002/montecarlorpp.pdf )
+# {4} = track_id - Track Index ( starting at 1 )
+# {5} = start_vertex - where track is born
+# {6} = stop_vertex - vertex where track ends ( 0 for a track that does not end in this event)
+# {7} = eg_pid - Event Generator PID
 tTrack = """TRACK: {0} {1:f} {2:f} {3:f} {4} {5} {6} {7}"""
 
 
-import sys
+import os
 import numpy as np
 
-# Read UrQMD Event Header
-# Generate Random Vertex?
+# Purpose :
+# 1. Read UrQMD Event Header
+# 2. Generate Random Vertex
 # Read UrQMD Track Header
 # Read Track - lookup PDGID?
 
@@ -87,26 +88,112 @@ def file_len(fname):
             pass
     return i + 1
 
+
+ptypes = []
+def geantID( ityp, iso3, charge ) :
+	
+
+	rnd = np.random.random_sample()
+
+	#pions
+	if ityp == 101 and charge == 0 :
+		return 7
+	if ityp == 101 and charge == 1 :
+		return 8
+	if ityp == 101 and charge == -1 :
+		return 9
+
+	#Kaons
+	if abs(ityp) == 106 and charge == 0 :
+		if rnd < 0.5 :
+			return 16
+		else :
+			return 10
+	if ityp == 106 and charge == 1 :
+		return 11
+	if ityp == -106 and charge == -1 :
+		return 12
+
+	
+	#protons
+	if ityp == 1 and charge == 1:
+		return 14
+	if ityp == -1 and charge == -1 :
+		return 15
+	if ityp == 1  and charge == 0 :
+		return 13
+	if ityp == -1  and charge == 0 :
+		return 25
+
+	#Sigma
+	if ityp == 40 and charge == 1:
+		return 19
+	if ityp == 40 and charge == -1 :
+		return 21
+	if ityp == -40 and charge == 1:
+		return 29
+	if ityp == -40 and charge == -1 :
+		return 27
+	if ityp == 40  and charge == 0 :
+		return 20
+	if ityp == -40  and charge == 0 :
+		return 28
+
+	# Xi
+	if ityp == 49 and charge == 0 :
+		return 22 
+	if ityp == -49 and charge == 0 :
+		return 30
+	if ityp == 49 and charge == -1 :
+		return 23 
+	if ityp == -49 and charge == 1 :
+		return 31 
+
+	#Lambda
+	if ityp == 27 :
+		return 18
+	if ityp == -27 :
+		return 26
+
+	#Omega
+	if ityp == 55 and charge == -1 :
+		return 24
+	if ityp == -55 and charge == 1 :
+		return 32
+
+	#Eta
+	if ityp == 102 :
+		return 17
+
+	ptypes.append( ityp )
+	return -1
+
+
+
+
 class UrQMDTrack : 
 	GPID = -1
 	px = -1.0
 	py = -1.0
 	pz = -1.0
 	stopv = 0
-	PDGPID = 0
+	EGPID = -1
 
 	def read_3_4( self, fIn, cLine, nTracks ) : 
 		#fIn.seek(0, 0)
 		for i, line in enumerate( fIn, 0 ) :
 			data = line.split()
-			self.GPID = data[ 9 ]
+		
 			charge = self.GPID = data[ 11 ]
 
 			# TODO: PDGID lookup from GPID and charge
-			self.PDGPID = -1
+			# itype+ iso3 + charge identify plc
+			# need to build lookup table to geant plc id
+			self.GPID = geantID( int(data[9]), int(data[10]), int(data[11]) )
 			self.px = float(data[ 5 ])
 			self.py = float(data[ 6 ])
 			self.pz = float(data[ 7 ])
+			self.EGPID = data[ 9 ]
 			break;
 		
 
@@ -116,14 +203,19 @@ class UrQMDTrack :
 def rndVertex( x, sx, y, sy, zMin, zMax ) :
 	vX = sx * np.random.randn() + x
 	vY = sy * np.random.randn() + y
-	vZ = np.random.random_sample( ) * 60 - 30
+	vZ = np.random.random_sample( ) * (zMax - zMin) + zMin
 	return ( vX, vY, vZ )
 
 
-def convert( finput ) :
+def convert( finput, tofile = False ) :
 
 	fLength = file_len( finput )
 	fInput = open( finput )
+	if tofile == True :
+		foutput = os.path.splitext(  finput )[ 0 ] + ".tx";
+		print finput, "-->", foutput
+		fOutput = open( foutput, 'w' )
+
 
 	eof = False
 	iEvent = 1
@@ -134,18 +226,27 @@ def convert( finput ) :
 		cEvent = UrQMDEvent( iEvent )
 		currentLine += cEvent.read_3_4( fInput, currentLine );
 		currentLine += int(cEvent.nTracks)
-		print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
+		if tofile == True :
+			fOutput.write( tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices ) + "\n" )
+		else :
+			print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
 
 		# Vertex
 		vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
 		vT = 0
-		print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
+		if tofile == True :
+			fOutput.write( tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks ) + "\n" )
+		else :
+			print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
 
 		# Tracks
 		for iTrack in range( 0, int(cEvent.nTracks) ) :
 			cTrack = UrQMDTrack()
 			cTrack.read_3_4( fInput, int(currentLine + iTrack), cEvent.nTracks)
-			print tTrack.format( cTrack.PDGPID, cTrack.px, cTrack.py, cTrack.pz, cEvent.index, iTrack, cTrack.stopv, cTrack.GPID )
+			if tofile == True :
+				fOutput.write( tTrack.format( cTrack.GPID, cTrack.px, cTrack.py, cTrack.pz, iTrack + 1, 1, 0, cTrack.EGPID ) + "\n" )
+			else :
+				print tTrack.format( cTrack.GPID, cTrack.px, cTrack.py, cTrack.pz, iTrack + 1, 1, 0, cTrack.EGPID )
 
 		iEvent = iEvent + 1;
 		if currentLine >= fLength :
@@ -153,4 +254,7 @@ def convert( finput ) :
 			break
 
 	fInput.close()
+	if tofile == True :
+		fOutput.close()
+
 
