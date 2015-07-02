@@ -5,7 +5,7 @@ import os
 
 parser = argparse.ArgumentParser( description="Converts a UrQMD standard output (f13 or f14) into the (new) STAR TX format. Can convert all files in a directory if a directory path is given. Otherwise the given file is converted and written to stdout" );
 parser.add_argument( "input", help="Input filename or directory containing UrQMD standard output files" )
-parser.add_argument("--split", help="save each input file to an output file with the same name + .tx suffix",
+parser.add_argument("--split", help="Saves output for each input file to an output file with the same name + .tx suffix",
                     action="store_true")
 
 

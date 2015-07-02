@@ -12,7 +12,7 @@ def createProject( p_name, energy, totalEvents, eventsPerJob = 100 ) :
 		inputfile.writeInputfile( eventsPerJob, energy, p_root + "/input" + str(i) + ".urqmd" )
 
 def exportOutputFile( index, path ) : 
-	fname = os.path.abspath( os.path.join( path, "ouput" + str(index) + ".f13" ) )
+	fname = os.path.abspath( os.path.join( path, "output" + str(index) + ".f13" ) )
 	os.environ[ "ftn13" ] =  fname # standard output with freeze-out info
 	print "ftn13 = " + fname
 
