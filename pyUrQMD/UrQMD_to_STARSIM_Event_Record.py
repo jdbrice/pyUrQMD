@@ -207,12 +207,29 @@ def rndVertex( x, sx, y, sy, zMin, zMax ) :
 	return ( vX, vY, vZ )
 
 
-def convert( finput, tofile = False ) :
 
+def nextOutputFile( basename ) :
+	found = False;
+	index = 0;
+	while False == found :
+		if os.path.isfile( basename + str(index) + ".tx" ) :
+			found = False;
+		else :
+			found = True;
+			return basename + str(index) + ".tx"
+		index += 1;
+
+
+OUTPUT_BASE_NAME = "urqmd_";
+
+def convert( finput, split = -1 ) :
+
+	split = int(split)
 	fLength = file_len( finput )
 	fInput = open( finput )
-	if tofile == True :
-		foutput = os.path.splitext(  finput )[ 0 ] + ".tx";
+	
+	if split > 1 :
+		foutput = nextOutputFile( os.path.join( os.path.dirname(finput), OUTPUT_BASE_NAME) );
 		print finput, "-->", foutput
 		fOutput = open( foutput, 'w' )
 
@@ -226,7 +243,7 @@ def convert( finput, tofile = False ) :
 		cEvent = UrQMDEvent( iEvent )
 		currentLine += cEvent.read_3_4( fInput, currentLine );
 		currentLine += int(cEvent.nTracks)
-		if tofile == True :
+		if split > 1 :
 			fOutput.write( tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices ) + "\n" )
 		else :
 			print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
@@ -234,7 +251,7 @@ def convert( finput, tofile = False ) :
 		# Vertex
 		vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
 		vT = 0
-		if tofile == True :
+		if split > 1 :
 			fOutput.write( tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks ) + "\n" )
 		else :
 			print tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks )
@@ -243,18 +260,28 @@ def convert( finput, tofile = False ) :
 		for iTrack in range( 0, int(cEvent.nTracks) ) :
 			cTrack = UrQMDTrack()
 			cTrack.read_3_4( fInput, int(currentLine + iTrack), cEvent.nTracks)
-			if tofile == True :
+			if split > 1 :
 				fOutput.write( tTrack.format( cTrack.GPID, cTrack.px, cTrack.py, cTrack.pz, iTrack + 1, 1, 0, cTrack.EGPID ) + "\n" )
 			else :
 				print tTrack.format( cTrack.GPID, cTrack.px, cTrack.py, cTrack.pz, iTrack + 1, 1, 0, cTrack.EGPID )
 
 		iEvent = iEvent + 1;
+
 		if currentLine >= fLength :
 			eof = True
 			break
 
+		# push to next file if we are splitting
+		if split > 1 and iEvent > split :
+			foutput = nextOutputFile( os.path.join( os.path.dirname(finput), OUTPUT_BASE_NAME) )
+			print finput, "-->", foutput
+			fOutput.close();
+			fOutput = open( foutput, 'w' )
+			iEvent = 1
+
+		
 	fInput.close()
-	if tofile == True :
+	if split > 1 :
 		fOutput.close()
 
 
