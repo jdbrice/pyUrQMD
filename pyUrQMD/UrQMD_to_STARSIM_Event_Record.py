@@ -207,7 +207,8 @@ def rndVertex( x, sx, y, sy, zMin, zMax ) :
 	return ( vX, vY, vZ )
 
 
-
+# searches the output directory for the next available output file
+# This allows sequential ordering even across multiple input files
 def nextOutputFile( basename ) :
 	found = False;
 	index = 0;
@@ -249,7 +250,7 @@ def convert( finput, split = -1 ) :
 			print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
 
 		# Vertex
-		vX, vY, vZ = rndVertex( 0, 1.0, -0.89, 1.0, -30, 30 )
+		vX, vY, vZ = rndVertex( 0, 0.1, -0.89, 0.1, -30, 30 )
 		vT = 0
 		if split > 1 :
 			fOutput.write( tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks ) + "\n" )
