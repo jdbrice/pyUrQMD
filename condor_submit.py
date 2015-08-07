@@ -4,7 +4,6 @@ import sys
 
 print "Usage:\n", "condor_submit.py project_name"
 
-eventsPerJob = 100
 
 if len( sys.argv ) >= 2 :
 	name = sys.argv[ 1 ]
