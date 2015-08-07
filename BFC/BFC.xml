@@ -1,0 +1,27 @@
+
+
+<!-- Your chain options need 'fzin' to read the FZD file type -->
+<!-- Run14 AuAu 14.5 : 20 events took ~ 2.5hrs to run -->
+<job  name="BFC" maxFilesPerProcess="1" filesPerHour=".35" fileListSyntax="paths" simulateSubmission ="false" >
+
+	<stdout URL="file:{output_path}/log/log_$JOBID.log" />
+	<stderr URL="file:{output_path}/log/err_$JOBID.err" />
+	<input URL="filelist:{input_path}/current.lis" nFiles="{n_files}" />
+	<output fromScratch="*" toURL="file:{output_path}/" />
+
+	<command>
+
+	    starver dev
+	    root4star -b -q -l 'bfc.C( {N_Events}, "Chain Options here", "{path_to_fxd_files}/'"$INPUTFILE0"'.fzd" )' &gt;&amp; {output_path}/log_${INPUTFILE0}.log
+
+	</command>
+
+	<Generator> 
+ 		<Location>{output_path}/gen/</Location> 
+ 	</Generator> 
+</job>
+
+
+<!-- the items in {} need to be replaced - but not the ones in ${} - those are environment variable subs  
+	if you need to generate a lot of these then copy this into python and use it as a string template
+	but you will need to escape the ${} into ${{}} -->

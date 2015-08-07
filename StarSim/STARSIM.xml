@@ -1,0 +1,29 @@
+
+<!-- before running this make sure your *.tx urqmd files are at {path_to_tx_files} and they are formatted like urqmd_i.tx -->
+<!-- 20 Events from AuAu14.5 took ~1.5 hours to run -->
+<job  name="STARSIM" maxFilesPerProcess="1" filesPerHour=".75" fileListSyntax="paths" simulateSubmission ="false" >
+
+	<stdout URL="file:{output_path}/log/$JOBID.log" />
+	<stderr URL="file:{output_path}/log/$JOBID.err" />
+	<input URL="filelist:{input_path}" nFiles="{n_files}" />
+	<output fromScratch="*" toURL="file:{output_path}/" />
+
+	<command>
+
+	    
+	    set kumac={input_path}/StarSim.kumac
+	    set nEvents={N}
+	    set geometry={geom}
+
+	    starsim -w 0 -b ${kumac} {path_to_tx_files}/urqmd_${INPUTFILE0}.tx ${INPUTFILE0} ${nEvents} ${geometry} &gt;&amp; {log_path}/log_${JOBID}.log
+
+	</command>
+
+	<Generator> 
+ 		<Location>{output_path}/gen/</Location> 
+ 	</Generator> 
+</job>
+
+<!-- the items in {} need to be replaced - but not the ones in ${} - those are environment variable subs  
+	if you need to generate a lot of these then copy this into python and use it as a string template
+	but you will need to escape the ${} into ${{}} -->
