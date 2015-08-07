@@ -95,6 +95,12 @@ def geantID( ityp, iso3, charge ) :
 
 	rnd = np.random.random_sample()
 
+	#gamma
+	if abs(ityp) == 100 :
+		return 1
+
+	# Mesons
+	
 	#pions
 	if ityp == 101 and charge == 0 :
 		return 7
@@ -102,6 +108,10 @@ def geantID( ityp, iso3, charge ) :
 		return 8
 	if ityp == 101 and charge == -1 :
 		return 9
+
+	#Eta
+	if ityp == 102 :
+		return 17
 
 	#Kaons
 	if abs(ityp) == 106 and charge == 0 :
@@ -114,6 +124,7 @@ def geantID( ityp, iso3, charge ) :
 	if ityp == -106 and charge == -1 :
 		return 12
 
+	#Baryons
 	
 	#protons
 	if ityp == 1 and charge == 1:
@@ -161,12 +172,14 @@ def geantID( ityp, iso3, charge ) :
 	if ityp == -55 and charge == 1 :
 		return 32
 
-	#Eta
-	if ityp == 102 :
-		return 17
+	
 
 	ptypes.append( ityp )
-	return -1
+	# just pass through other types as long as they dont conflict with GEANT PIDs
+	if ityp > 50 :
+		return ityp
+	else :
+		return -1
 
 
 
@@ -223,8 +236,10 @@ def nextOutputFile( basename ) :
 
 OUTPUT_BASE_NAME = "urqmd_";
 
-def convert( finput, split = -1 ) :
+def convert( finput, split = -1, **kwargs ) :
 
+	#set the random seed - have it generate one for us using /dev/urandom on *nix
+	np.random.seed( seed=None ) 
 	split = int(split)
 	fLength = file_len( finput )
 	fInput = open( finput )
@@ -250,7 +265,33 @@ def convert( finput, split = -1 ) :
 			print tEvent.format( cEvent.index, cEvent.nTracks, cEvent.nVertices )
 
 		# Vertex
-		vX, vY, vZ = rndVertex( 0, 0.1, -0.89, 0.1, -30, 30 )
+		if 'vx' in kwargs :
+			centerVx = float(kwargs[ 'vx' ])
+		else :
+			centerVx = 0.0
+		if 'vy' in kwargs :
+			centerVy = float(kwargs[ 'vy' ])
+		else :
+			centerVy = 0.0
+		if 'sigVx' in kwargs :
+			sigVx = kwargs[ 'sigVx' ]
+		else :
+			sigVx = 0.1
+		if 'sigVy' in kwargs :
+			sigVy = kwargs[ 'sigVy' ]
+		else :
+			sigVy = 0.1
+		if 'zMin' in kwargs :
+			zMin = kwargs[ 'zMin' ]
+		else :
+			zMin = -30
+		if 'zMax' in kwargs :
+			zMax = kwargs[ 'zMax' ]
+		else :
+			zMax = 0.1
+
+
+		vX, vY, vZ = rndVertex( centerVx, 0.1, centerVy, 0.1, -30, 30 )
 		vT = 0
 		if split > 1 :
 			fOutput.write( tVertex.format( vX, vY, vZ, vT, 1, 0, 0, cEvent.nTracks ) + "\n" )
